@@ -1,0 +1,7 @@
+eventlet
+flask
+flask_sqlalchemy
+flask_login
+flask_socketio
+flask_migrate
+redis

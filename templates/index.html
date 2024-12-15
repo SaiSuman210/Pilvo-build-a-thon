@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<h1 class="mt-5">Admin Dashboard</h1>
+<form method="POST" action="/add" class="mb-4">
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Add New Service</h5>
+            <div class="form-group">
+                <label for="name">Service Name</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="status">Status</label>
+                <input type="text" class="form-control" id="status" name="status" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Service</button>
+        </div>
+    </div>
+</form>
+
+<h2 class="mt-5">Services</h2>
+<div class="card">
+    <div class="card-body">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Service Name</th>
+                    <th>Status</th>
+                    <th>Update Status</th>
+                    <th>Incidents</th>
+                    <th>Log Incident</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for service in services %}
+                <tr>
+                    <td><strong>{{ service.name }}</strong></td>
+                    <td><span id="status-{{ service.id }}">{{ service.status }}</span></td>
+                    <td>
+                        <form method="POST" action="/update/{{ service.id }}" class="form-inline">
+                            <div class="form-group mr-2">
+                                <input type="text" class="form-control" name="status" placeholder="New Status" required>
+                            </div>
+                            <button type="submit" class="btn btn-secondary">Update</button>
+                        </form>
+                    </td>
+                    <td>
+                        <ul>
+                            {% for incident in service.incidents %}
+                            <li>{{ incident.description }} - {{ incident.status }}</li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                    <td>
+                        <form method="POST" action="/log_incident/{{ service.id }}" class="form-inline">
+                            <div class="form-group mr-2">
+                                <input type="text" class="form-control" name="description" placeholder="Incident Description" required>
+                            </div>
+                            <div class="form-group mr-2">
+                                <input type="text" class="form-control" name="status" placeholder="Incident Status" required>
+                            </div>
+                            <button type="submit" class="btn btn-warning">Log Incident</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.3/socket.io.min.js"></script>
+<script>
+    const socket = io();
+
+    socket.on('status_update', function(data) {
+        Swal.fire({
+            title: 'Status Update',
+            text: `${data.name} status changed to ${data.status}`,
+            icon: 'info',
+            confirmButtonText: 'OK'
+        });
+        const statusElement = document.querySelector(`#status-${data.id}`);
+        if (statusElement) {
+            statusElement.textContent = data.status;
+        }
+    });
+</script>
+{% endblock %}
